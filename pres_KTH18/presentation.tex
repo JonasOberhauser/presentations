@@ -1,0 +1,30 @@
+\documentclass{beamer}
+
+\beamertemplatenavigationsymbolsempty
+
+\usepackage{etex}
+\input{preamble/packages}
+\input{preamble/extpackages}
+\input{preamble/declarations}
+\input{preamble/extdeclarations}
+%normal red is too bright
+\definecolor{red}{HTML}{800000} 
+
+%\usepackage{bm}
+
+
+% \C is used inside figures created by inkscape, which sadly does not have good alignment support for tex.
+\newcommand\C[1]{\raisebox{-0.5\height}{\texttt{#1}}} 
+
+\title{Verifying Concurrent Operating Systems}
+\author{Jonas Oberhauser}
+\date{\today} % Date, can be changed to a custom date
+\begin{document}
+\begin{frame}
+\titlepage % Print the title page as the first slide
+\end{frame}
+
+\bibliography{bibliography}
+
+
+\end{document}
