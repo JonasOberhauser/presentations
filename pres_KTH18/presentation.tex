@@ -24,7 +24,51 @@
 \titlepage % Print the title page as the first slide
 \end{frame}
 
+
+\begin{frame}
+Multiple threads, shared state
+
+\begin{center}
+	\texttt{
+		\begin{tabular}{l||l}
+			i++; & i++;
+		\end{tabular}
+	}
+\end{center}
+
+Does this have the property 
+\[ \texttt{i} = 2 \ ? \]
+
+\end{frame}
+
+
+
+\begin{frame}
+Break up into small steps:
+
+\begin{center}
+	\texttt{
+		\begin{tabular}{l||l}
+			t1 = i; & t2 = i;
+		\\	i = t1+1; & i = t2+1;
+		\end{tabular}
+	}
+\end{center}
+
+Look at all interleavings:
+
+
+\begin{center}
+	\scalebox{.45}{
+		\begin{tabular}{ccccc}
+			\includefig{increment_schedule1221} & \hspace{4em} & \includefig{increment_schedule1212} & \hspace{4em} & \includefig{increment_schedule1122}\\
+			\includefig{increment_schedule2112} & \hspace{4em} & \includefig{increment_schedule2121} & \hspace{4em} & \includefig{increment_schedule2211}	
+	\end{tabular}}
+\end{center}
+
+\end{frame}
 \bibliography{bibliography}
+
 
 
 \end{document}
