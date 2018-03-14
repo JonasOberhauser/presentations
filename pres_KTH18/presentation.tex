@@ -45,16 +45,22 @@ Trivial
 
 
 \begin{frame}
-In reality:
+In reality (e.g., on MIPS):
 \begin{center}
 	\texttt{
 		\begin{tabular}{l}
-			t1 = i;
+			fetch;
+			\\t1 = i;
+			\\fetch;
 			\\ t1 = t1 + 1; 
+			\\fetch;
 			\\ i = t1;
 			\\
+			\\ fetch;
 			\\ t1 = i;
+			\\ fetch;
 			\\ t1 = t1 + 1; 
+			\\ fetch;
 			\\ i = t1;
 		\end{tabular}
 	}
@@ -133,19 +139,22 @@ Break up into smaller steps:
 \begin{center}
 	\texttt{
 		\begin{tabular}{l||l}
-			t1 = i; & t2 = i;
-			\\	t1 = t1+1; & t2 = t2+1;
-			\\	i = t1; & i = t2;
+			fetch; & fetch;
+			\\ t1 = i; & t2 = i;
+			\\ fetch; & fetch;
+			\\ t1 = t1+1; & t2 = t2+1;
+			\\ fetch; & fetch;
+			\\ i = t1; & i = t2;
 		\end{tabular}
 	}
 \end{center}
 
 New behaviors?
 
-Look at all 20 interleavings???
+Look at all 924 interleavings???
 \onslide<2->
 \begin{center}
-	\scalebox{0.8}{\includegraphics{figures/nope-im-out}}
+	\scalebox{0.6}{\includegraphics{figures/nope-im-out}}
 \end{center}
 \end{frame}
 
@@ -177,7 +186,7 @@ Breaking up can be modeled by cooperative vs preemptive interleaving
 \end{center}
 
 \begin{description}
-	\item<2->[Cooperative scheduler] will only interleave at `;'
+	\item<2->[Cooperative scheduler] will only interleave at `;' (called \textbf{interleaving points} (IP))
 	
 	\begin{center}
 		\scalebox{.3}{
@@ -221,10 +230,88 @@ Make this formal with ownership
 \end{frame} 
 
 \begin{frame}
+\alt<2->{\alt<3->{Introduce dynamic ownership:
+		\begin{center}
+			\includefig{MLayoutOwnedByTwo}
+	\end{center}}{Introduce dynamic ownership:
+		\begin{center}
+			\includefig{MLayoutOwnedAnnotated}
+\end{center}}}{Basic layout: processor registers and shared memory
+	\begin{center}
+		\includefig{MLayoutUnowned}
+\end{center}}
+\end{frame} 
+
+
+\begin{frame}
+\textbf{Software Condition 1)}: annotate accesses based on ownership as local or shared
+
 \begin{center}
-	\includefig{MLayoutUnowned}
+	\includefig{MLayoutOwnedAnnotations}
+\end{center}
+
+Shared access is \textbf{linearization point} (LP)
+\end{frame} 
+
+\begin{frame}
+\textbf{Software Condition 2)}: at most one LP between two IPs
+
+Violated:
+\begin{center}
+	\texttt{
+		\begin{tabular}{l||l}
+			t1 = \{i\}, & t2 = \{i\},
+			\\	\{i\} = t1+1; & \{i\} = t2+1;
+		\end{tabular}
+	}
+\end{center}
+
+Satisfied:
+\begin{center}
+\texttt{
+	\begin{tabular}{l||l}
+		fetch, & fetch,
+		\\ t1 = \{i\}; & t2 = \{i\};
+		\\ fetch, & fetch,	
+		\\ t1 = t1 +1, & t2 = t2 + 1,
+		\\ fetch, & fetch,
+		\\	\{i\} = t1; & \{i\} = t2;
+	\end{tabular}
+}
+\end{center}
+\end{frame}
+
+
+\begin{frame}
+\textbf{Software Condition 3)} (technical): After reaching LP, an IP must be reachable
+
+Violated:
+\begin{center}
+\texttt{
+	\begin{tabular}{l}
+		\{i\} = 1,
+		\\ while(1) \{
+		\\ \};
+	\end{tabular}
+}
 \end{center}
 \end{frame} 
+
+\begin{frame}
+Checking safety
+\begin{center}
+	\texttt{
+		\begin{tabular}{l||l}
+			fetch, & fetch,
+			\\ t1 = \{i\}; & t2 = \{i\};
+			\\ fetch, & fetch,	
+			\\ t1 = t1 +1, & t2 = t2 + 1,
+			\\ fetch, & fetch,
+			\\	\{i\} = t1; & \{i\} = t2;
+		\end{tabular}
+	}
+\end{center}
+\end{frame}
 
 
 \bibliography{bibliography}
