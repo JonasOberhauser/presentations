@@ -26,6 +26,48 @@
 
 
 \begin{frame}
+Sequential verification
+\begin{center}
+	\texttt{
+		\begin{tabular}{l}
+			i++; 
+		\\ i++;
+		\end{tabular}
+	}
+\end{center}
+
+After execution do we have 
+\[ \texttt{i} = 2 \ ? \]
+
+Trivial
+\end{frame}
+
+
+
+\begin{frame}
+In reality:
+\begin{center}
+	\texttt{
+		\begin{tabular}{l}
+			t1 = i;
+			\\ t1 = t1 + 1; 
+			\\ i = t1;
+			\\
+			\\ t1 = i;
+			\\ t1 = t1 + 1; 
+			\\ i = t1;
+		\end{tabular}
+	}
+\end{center}
+
+After execution do we have 
+\[ \texttt{i} = 2 \ ? \]
+
+Equally Trivial
+\end{frame}
+
+
+\begin{frame}
 Multiple threads, shared state
 
 \begin{center}
@@ -36,11 +78,22 @@ Multiple threads, shared state
 	}
 \end{center}
 
-Does this have the property 
+After execution do we have 
 \[ \texttt{i} = 2 \ ? \]
 
 \end{frame}
 
+
+\begin{frame}
+Interleavings:
+
+\begin{center}
+	\scalebox{.6}{
+		\begin{tabular}{ccc}
+			\includefig{increment_coarse12} & \hspace{4em} & \includefig{increment_coarse21} 
+		\end{tabular}}
+\end{center}
+\end{frame}
 
 
 \begin{frame}
@@ -55,18 +108,125 @@ Break up into small steps:
 	}
 \end{center}
 
+\onslide<2->
 Look at all interleavings:
 
 
 \begin{center}
 	\scalebox{.45}{
 		\begin{tabular}{ccccc}
-			\includefig{increment_schedule1221} & \hspace{4em} & \includefig{increment_schedule1212} & \hspace{4em} & \includefig{increment_schedule1122}\\
-			\includefig{increment_schedule2112} & \hspace{4em} & \includefig{increment_schedule2121} & \hspace{4em} & \includefig{increment_schedule2211}	
+			\includefig{increment_schedule1122} & \hspace{4em} & \includefig{increment_schedule1212} & \hspace{4em} & \includefig{increment_schedule1221}\\
+			\includefig{increment_schedule2211} & \hspace{4em} & \includefig{increment_schedule2121} & \hspace{4em} & \includefig{increment_schedule2112}	
 	\end{tabular}}
 \end{center}
 
+New behavior:
+\[ \texttt{i} = 1 \ \lor \ \texttt{i} = 2 \]
 \end{frame}
+
+
+
+
+\begin{frame}
+Break up into smaller steps:
+
+\begin{center}
+	\texttt{
+		\begin{tabular}{l||l}
+			t1 = i; & t2 = i;
+			\\	t1 = t1+1; & t2 = t2+1;
+			\\	i = t1; & i = t2;
+		\end{tabular}
+	}
+\end{center}
+
+New behaviors?
+
+Look at all 20 interleavings???
+\onslide<2->
+\begin{center}
+	\scalebox{0.8}{\includegraphics{figures/nope-im-out}}
+\end{center}
+\end{frame}
+
+\begin{frame}
+Step 1 to a better life: \textbf{order reduction}
+
+\begin{enumerate} 
+	\item Answers the question: 
+	
+	\begin{center}
+		``When did we break it up enough to get all possible behaviors?''
+	\end{center}
+	\item Theorem: if program satisfies some software conditions, breaking it down further will not add new behaviors
+\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}
+Breaking up can be modeled by cooperative vs preemptive interleaving
+
+\begin{center}
+	\texttt{
+		\begin{tabular}{l||l}
+			t1 = i, & t2 = i,
+			\\	i = t1+1; & i = t2+1;
+		\end{tabular}
+	}
+\end{center}
+
+\begin{description}
+	\item<2->[Cooperative scheduler] will only interleave at `;'
+	
+	\begin{center}
+		\scalebox{.3}{
+			\begin{tabular}{ccc}
+				\includefig{increment_schedule1122} & \hspace{4em} & \includefig{increment_schedule2211} \\
+		\end{tabular}}
+	\end{center}
+	\item<3->[Preemptive scheduler] will interleave at `;' and `,'
+	
+	\begin{center}
+		\scalebox{.3}{
+			\begin{tabular}{ccccc}
+				\includefig{increment_schedule1122} & \hspace{4em} & \includefig{increment_schedule1212} & \hspace{4em} & \includefig{increment_schedule1221}\\
+				\includefig{increment_schedule2211} & \hspace{4em} & \includefig{increment_schedule2121} & \hspace{4em} & \includefig{increment_schedule2112}	
+		\end{tabular}}
+	\end{center}
+\end{description}
+
+\end{frame} 
+
+
+
+\begin{frame}
+\begin{center}
+	\texttt{
+		\begin{tabular}{l||l}
+			t1 = i, & t2 = i,
+			\\	i = t1+1; & i = t2+1;
+		\end{tabular}
+	}
+\end{center}
+
+Observation: 
+\begin{enumerate} 
+	\item \texttt{t1} only accessed by Thread 1
+	\item \texttt{t2} only accessed by Thread 2
+	\item \texttt{i} accessed by both, concurrently
+\end{enumerate}
+
+Make this formal with ownership
+\end{frame} 
+
+\begin{frame}
+\begin{center}
+	\includefig{MLayoutUnowned}
+\end{center}
+\end{frame} 
+
+
 \bibliography{bibliography}
 
 
