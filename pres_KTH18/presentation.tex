@@ -10,6 +10,7 @@
 %normal red is too bright
 \definecolor{red}{HTML}{800000} 
 
+\usetikzlibrary{matrix,shapes,arrows,fit,tikzmark}
 %\usepackage{bm}
 
 
@@ -270,11 +271,17 @@ Satisfied:
 \begin{center}
 \texttt{
 	\begin{tabular}{l||l}
-		fetch, & fetch,
-		\\ t1 = \{i\}; & t2 = \{i\};
-		\\ fetch, & fetch,	
-		\\ t1 = t1 +1, & t2 = t2 + 1,
-		\\ fetch, & fetch,
+		t1 = \{i\}; & t2 = \{i\};
+		\\	\{i\} = t1+1; & \{i\} = t2+1;
+	\end{tabular}
+}
+\end{center}
+Satisfied:
+\begin{center}
+	\texttt{
+		\begin{tabular}{l||l}
+		t1 = \{i\}; & t2 = \{i\};
+		\\ t1 = t1 + 1, & t2 = t2 + 1,
 		\\	\{i\} = t1; & \{i\} = t2;
 	\end{tabular}
 }
@@ -283,7 +290,7 @@ Satisfied:
 
 
 \begin{frame}
-\textbf{Software Condition 3)} (technical): After reaching LP, an IP must be reachable
+\textbf{Software Condition 3)}: After reaching LP, an IP must be reachable
 
 Violated:
 \begin{center}
@@ -297,22 +304,369 @@ Violated:
 \end{center}
 \end{frame} 
 
+
+%%Taken from https://tex.stackexchange.com/questions/240542/adding-a-rectangular-box-with-tikz-to-table-beamer
+
+	% Some options common to all the nodes and paths
+	\tikzset{   
+		every picture/.style={remember picture,baseline},
+		every node/.style={anchor=base,align=center,outer sep=1.5pt},
+		every path/.style={thick},
+	}
+	
+	\newcommand\marktopleft[1]{%
+		\tikz[overlay,remember picture] 
+		\node (marker-#1-a) at (.4em,.1em) {};%
+	}
+	\newcommand\markbottomright[2]{%
+		\tikz[overlay,remember picture] 
+		\node (marker-#1-b) at (-.4em, .5em) {};%
+		\tikz[overlay,remember picture,inner sep=3pt]
+		\node[draw=#2,rounded corners,fit=(marker-#1-a.north west) (marker-#1-b.south east)] {};%
+	}
+
+%%end Taken
+
+\begin{frame}[fragile,allowframebreaks]
+\begin{center}
+	\begin{tabular}{l||l} \texttt{fetch,} & \texttt{fetch,}
+		\\ \texttt{t1 = \{i\},} \hspace{1em}  & \texttt{t2 = \{i\};} \hspace{1em} 
+		\\ \texttt{fetch,} & \texttt{fetch,}
+		\\ \texttt{t1 = t1 + 1;} & \texttt{t2 = t2 + 1,}
+		\\ \texttt{fetch,} & \texttt{fetch,}
+		\\	\texttt{\{i\} = t1;} \hspace{1em}  & \texttt{\{i\} = t2;} \hspace{1em} 
+	\end{tabular}
+\end{center}
+\vspace{2.09375em}
+
+\framebreak
+\begin{center}
+		\begin{tabular}{l||l} \marktopleft{a1}\texttt{fetch,} & \marktopleft{a2}\texttt{fetch,}
+			\\ \texttt{t1 = \{i\},}  & \texttt{t2 = \{i\};} \hspace{1em} \markbottomright{a2}{red}
+			\\ \texttt{fetch,} & \marktopleft{b2}\texttt{fetch,}
+			\\ \texttt{t1 = t1 + 1;}\markbottomright{a1}{blue} & \texttt{t2 = t2 + 1,}
+			\\ \marktopleft{b1}\texttt{fetch,} & \texttt{fetch,}
+			\\	\texttt{\{i\} = t1;} \hspace{1.45em} \markbottomright{b1}{blue} & \texttt{\{i\} = t2;} \hspace{1em} \markbottomright{b2}{red}
+		\end{tabular}
+\end{center}
+
+
+%\framebreak
+%\begin{center}
+%	\begin{tabular}{l||l} \marktopleft{a1}\texttt{t1 = \{i\};}  & \marktopleft{a2}\texttt{t2 = \{i\};}
+%		\\ \hphantom{\texttt{t1 = \{i\};}} \hspace{1em} \markbottomright{a1}{blue} & \hphantom{\texttt{t2 = \{i\};}} \hspace{1em} \markbottomright{a2}{red}
+%		\\[5pt] \marktopleft{b1}\texttt{\{i\} = t1;} & \marktopleft{b2}\texttt{\{i\} = t2;}
+%		\\ \hphantom{\texttt{t1 = t1 + 1,}} & \hphantom{\texttt{t1 = t1 + 1,}}
+%		\\
+%		\\	\hphantom{\texttt{\{i\} = t1;}} \hspace{1em} \markbottomright{b1}{blue} & \hphantom{\texttt{\{i\} = t2;}} \hspace{1em} \markbottomright{b2}{red}
+%	\end{tabular}
+%\end{center}
+\end{frame}
 \begin{frame}
-Checking safety
+Particular execution (Let $\alpha_i, \beta_i$ be the addresses of the fetched instructions)
+\begin{center}
+	\begin{tabular}{ccl||lccc}
+		O & P & & & O & P 
+		\\ $\emptyset$ &  $\Set{\alpha_1}$ & \texttt{fetch ($\alpha_1$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ &  $\Set{\alpha_1}$ & \texttt{t1 = \{i\},} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch  ($\alpha_2$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{t1 = t1 + 1;} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\onslide<2->{
+		\\[4pt] $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{fetch ($\beta_1$),} & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{t2 = \{i\};} & $\emptyset$ &  $\Set{\beta_1}$ &}
+		\onslide<3->{
+		\\[4pt] $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{fetch ($\beta_2$),} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{t2 = t2 + 1,} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{fetch ($\beta_3$),} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{\{i\} = t2;} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$ &}
+		\onslide<4->{
+		\\[4pt] $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch ($\alpha_3$),} & & $\emptyset$ &  $\emptyset$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{\{i\} = t1;} & & $\emptyset$ &  $\emptyset$&}
+	\end{tabular}
+\end{center}
+\end{frame}
+
+
+\begin{frame}
+Program obeys conditions in all \textbf{cooperative} executions
+\begin{center}\scalebox{0.26}{
+\begin{tabular}{ccccccc}
+	\begin{tabular}{ccl||lccc}
+		\\ $\emptyset$ & $\Set{\alpha_1}$ & \texttt{fetch ($\alpha_1$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_1}$ & \texttt{t1 = \{i\},} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch  ($\alpha_2$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{t1 = t1 + 1;} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\[4pt] $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch ($\alpha_3$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{\{i\} = t1;} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\[4pt] $\emptyset$ &  $\emptyset$ & & \texttt{fetch ($\beta_1$),} & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ &  $\emptyset$ & & \texttt{t2 = \{i\};} & $\emptyset$ &  $\Set{\beta_1}$ &
+		\\[4pt] $\emptyset$ &   $\emptyset$ & & \texttt{fetch ($\beta_2$),} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &   $\emptyset$ & & \texttt{t2 = t2 + 1,} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &   $\emptyset$ & & \texttt{fetch ($\beta_3$),} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &   $\emptyset$ & & \texttt{\{i\} = t2;} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$ &
+	\end{tabular} 
+	& \hspace{2em} &  \hspace{2em} & 
+	\begin{tabular}{ccl||lccc}
+		\\ $\emptyset$ & $\Set{\alpha_1}$ & \texttt{fetch ($\alpha_1$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_1}$ & \texttt{t1 = \{i\},} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch  ($\alpha_2$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{t1 = t1 + 1;} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\[4pt] $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{fetch ($\beta_1$),} & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{t2 = \{i\};} & $\emptyset$ &  $\Set{\beta_1}$ &
+		\\[4pt] $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch ($\alpha_3$),} & & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{\{i\} = t1;} & & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\[4pt] $\emptyset$ & $\emptyset$ & & \texttt{fetch ($\beta_2$),} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &  $\emptyset$ & & \texttt{t2 = t2 + 1,} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &  $\emptyset$ & & \texttt{fetch ($\beta_3$),} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &  $\emptyset$ & & \texttt{\{i\} = t2;} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$ &
+	\end{tabular}  
+	& \hspace{2em} &  \hspace{2em} & 
+	\begin{tabular}{ccl||lccc}
+		\\ $\emptyset$ & $\Set{\alpha_1}$ & \texttt{fetch ($\alpha_1$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_1}$ & \texttt{t1 = \{i\},} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch  ($\alpha_2$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{t1 = t1 + 1;} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\[4pt] $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{fetch ($\beta_1$),} & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{t2 = \{i\};} & $\emptyset$ &  $\Set{\beta_1}$ &
+		\\[4pt] $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{fetch ($\beta_2$),} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{t2 = t2 + 1,} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{fetch ($\beta_3$),} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{\{i\} = t2;} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$ &
+		\\[4pt] $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch ($\alpha_3$),} & & $\emptyset$ &  $\emptyset$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{\{i\} = t1;} & & $\emptyset$ &  $\emptyset$&
+	\end{tabular}  
+\\ \hspace{3em} \\
+	\begin{tabular}{ccl||lccc}
+		\\ $\emptyset$ 		& $\Set{\alpha_1}$ 	& & \texttt{fetch ($\beta_1$),} 			& $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_1}$	& & \texttt{t2 = \{i\};} 					& $\emptyset$ &  $\Set{\beta_1}$ &
+		\\[4pt] $\emptyset$ & $\Set{\alpha_1}$	& & \texttt{fetch ($\beta_2$),} 			& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_1}$	& & \texttt{t2 = t2 + 1,} 					& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_1}$	& & \texttt{fetch ($\beta_3$),} 			& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_1}$ 	& & \texttt{\{i\} = t2;}					& $\emptyset$ &  $\Set{\beta_2,\beta_3}$ &
+		\\[4pt] $\emptyset$ & $\Set{\alpha_1}$ 	& \texttt{fetch ($\alpha_1$),} & 			& $\emptyset$ &  $\emptyset$&
+		\\ $\emptyset$ 		& $\Set{\alpha_1}$ 	& \texttt{t1 = \{i\},} & 					& $\emptyset$ &  $\emptyset$&
+		\\ $\emptyset$ 		& $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch  ($\alpha_2$),} & 	& $\emptyset$ &  $\emptyset$&
+		\\ $\emptyset$ 		& $\Set{\alpha_2, \alpha_3}$ & \texttt{t1 = t1 + 1;} & 			& $\emptyset$ &  $\emptyset$&
+		\\[4pt] $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch ($\alpha_3$),} & 	& $\emptyset$ &  $\emptyset$&
+		\\ $\emptyset$ 		& $\Set{\alpha_2, \alpha_3}$ & \texttt{\{i\} = t1;} & 			& $\emptyset$ &  $\emptyset$&
+	\end{tabular} 
+	& \hspace{2em} &  \hspace{2em} & 
+	\begin{tabular}{ccl||lccc}
+		\\ $\emptyset$ 		& $\Set{\alpha_1}$ 	& & \texttt{fetch ($\beta_1$),} 			& $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_1}$	& & \texttt{t2 = \{i\};} 					& $\emptyset$ &  $\Set{\beta_1}$ &
+		\\[4pt] $\emptyset$ & $\Set{\alpha_1}$ 	& \texttt{fetch ($\alpha_1$),} & 			& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_1}$ 	& \texttt{t1 = \{i\},} & 					& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch  ($\alpha_2$),} & 	& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_2, \alpha_3}$ & \texttt{t1 = t1 + 1;} & 			& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\[4pt] $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & & \texttt{fetch ($\beta_2$),} 	& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_2, \alpha_3}$ & & \texttt{t2 = t2 + 1,} 			& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_2, \alpha_3}$ & & \texttt{fetch ($\beta_3$),} 	& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_2, \alpha_3}$ & & \texttt{\{i\} = t2;}			& $\emptyset$ &  $\Set{\beta_2,\beta_3}$ &
+		\\[4pt] $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch ($\alpha_3$),} & 	& $\emptyset$ &  $\emptyset$&
+		\\ $\emptyset$ 		& $\Set{\alpha_2, \alpha_3}$ & \texttt{\{i\} = t1;} & 			& $\emptyset$ &  $\emptyset$&
+	\end{tabular}  
+	& \hspace{2em} &  \hspace{2em} & 
+	\begin{tabular}{ccl||lccc}
+		\\ $\emptyset$ 		& $\Set{\alpha_1}$ 	& & \texttt{fetch ($\beta_1$),} 			& $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_1}$	& & \texttt{t2 = \{i\};} 					& $\emptyset$ &  $\Set{\beta_1}$ &
+		\\[4pt] $\emptyset$ & $\Set{\alpha_1}$ 	& \texttt{fetch ($\alpha_1$),} & 			& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_1}$ 	& \texttt{t1 = \{i\},} & 					& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch  ($\alpha_2$),} & 	& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_2, \alpha_3}$ & \texttt{t1 = t1 + 1;} & 			& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\[4pt] $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{fetch ($\alpha_3$),} & 	& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\Set{\alpha_2, \alpha_3}$ & \texttt{\{i\} = t1;} & 			& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\[4pt] $\emptyset$ & $\emptyset$	& & \texttt{fetch ($\beta_2$),} 			& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\emptyset$	& & \texttt{t2 = t2 + 1,} 					& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\emptyset$	& & \texttt{fetch ($\beta_3$),} 			& $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ 		& $\emptyset$ 	& & \texttt{\{i\} = t2;}					& $\emptyset$ &  $\Set{\beta_2,\beta_3}$ &
+	\end{tabular}  
+\end{tabular}
+}
+\end{center}
+
+\begin{itemize} 
+	\item By the order reduction theorem, this program will not behave differently under preemptive scheduler
+	\item Number of interleavings reduced by a factor of 150 for this toy program
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+Step 2 to a better life: \textbf{ownership deduction}
+
+No ownership annotations?
+\begin{center}
+	\begin{tabular}{ccl||lccc}
+		$\emptyset$ & $\Set{\alpha_1}$ & \texttt{fetch ($\alpha_1$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_1}$ & \texttt{t1 = \{i\},} & & $\emptyset$ &  $\Set{\beta_1}$%
+	\end{tabular}  
+\end{center}
+What to acquire now?
+\end{frame} 
+
+\begin{frame} 
+Execution of one thread between two LPs does not depend on other threads
+\begin{center}
+	\begin{tabular}{ccl||lccc}
+		$\emptyset$ & $\Set{\alpha_1}$ & \texttt{fetch ($\alpha_1$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_1}$ & \texttt{t1 = \{i\}{\color{red},}} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \color{red}\texttt{fetch  ($\alpha_2$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \color{red}\texttt{t1 = t1 + 1;} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\[4pt] $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{fetch ($\beta_1$),} & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{t2 = \{i\};} & $\emptyset$ &  $\Set{\beta_1}$ &
+		\\[4pt] $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{fetch ($\beta_2$),} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{t2 = t2 + 1,} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{fetch ($\beta_3$),} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$%
+		\\ $\emptyset$ &  $\Set{\alpha_2, \alpha_3}$ & & \texttt{\{i\} = t2;} & $\emptyset$ &  $\Set{\beta_2,\beta_3}$ &
+		\\[4pt] $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \color{red}\texttt{fetch ($\alpha_3$),} & & $\emptyset$ &  $\emptyset$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{{\color{red}\{i\} = t1};} & & $\emptyset$ &  $\emptyset$&
+	\end{tabular}  
+\end{center}
+But required ownership only depends on execution until next LP
+\end{frame} 
+
+\begin{frame}
+First idea: execute until next LP
+\begin{center}
+	\begin{tabular}{ccl||lccc}
+		$\emptyset$ & $\Set{\alpha_1}$ & \texttt{fetch ($\alpha_1$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_1}$ & \texttt{t1 = \{i\}{\color{red},}} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \color{red}\texttt{fetch  ($\alpha_2$),} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \color{red}\texttt{t1 = t1 + 1;} & & $\emptyset$ &  $\Set{\beta_1}$%
+		\\[4pt] $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \color{red}\texttt{fetch ($\alpha_3$),} & & $\emptyset$ &  $\emptyset$%
+		\\ $\emptyset$ & $\Set{\alpha_2, \alpha_3}$ & \texttt{{\color{red}\{i\} = t1};} & & $\emptyset$ &  $\emptyset$&
+	\end{tabular}  
+\end{center}
+
+Problems: 
+\begin{enumerate} 
+	\item maybe no more LP?
+	\item slow
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+Better idea: remember accesses by yourself and by others
+\begin{enumerate} 
+	\item Accesses by others must not be owned by you (upper bound)
+	\item Local accesses by yourself must be owned by you (lower bound)
+\end{enumerate} 
+Construct lower and upper bound for ownerships for each thread $X$
+\begin{align*}
+	O_\mathit{min}(X)\  &\subseteq \ O(X) \ \subseteq \ O_\mathit{max}(X) 
+	\\
+	P_\mathit{min}(X) \ &\subseteq \ P(X) \ \subseteq \ P_\mathit{max}(X)
+\end{align*}
+\end{frame} 
+\begin{frame}
+Example (for P of Thread 1)
+\begin{center}
+	\begin{tabular}{ccl||l}
+		$P_{min}$ & $P_{max}$ 
+		\\ 
+			$\Set{\alpha_1}$ 			& $\mathcal A$ 	& \texttt{fetch ($\alpha_1$),} & \\ 
+			$\emptyset$		 			& $\mathcal A$ 	&  \texttt{t1 = \{i\},} & \\ 
+			$\Set{\alpha_2}$		 	& $\mathcal A$ 	&  \texttt{fetch  ($\alpha_2$),} \\ 
+			$\Set{\alpha_2}$		 	& $\mathcal A$ 	&  \texttt{t1 = t1 + 1;} 
+		\\[4pt]
+			$\Set{\alpha_2}$		 	& $\mathcal A$ 	& & \texttt{fetch ($\beta_1$),}  \\
+			$\Set{\alpha_2}$		 	& $\mathcal A$ 	& & \texttt{t2 = \{i\};}
+		\\[4pt] 
+			$\Set{\alpha_2}$		 	& $\mathcal A$ 	& & \texttt{fetch ($\beta_2$),} \\ 
+			$\Set{\alpha_2}$		 	& $\mathcal A$ 	& & \texttt{t2 = t2 + 1,} \\
+			$\Set{\alpha_2}$		 	& $\mathcal A$ 	& & \texttt{fetch ($\beta_3$),} \\
+			$\Set{\alpha_2}$		 	& $\mathcal A \setminus \Set{\texttt{i}}$ & & \texttt{\{i\} = t2;} 
+		\\[4pt] 
+			$\Set{\alpha_2, \alpha_3}$	& $\mathcal A \setminus \Set{\texttt{i}}$ & \texttt{fetch ($\alpha_3$),} & \\ 
+			$\emptyset$		 	& $\mathcal A$ 		& \texttt{\{i\} = t1;} & 
+	\end{tabular}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+Example (for O of Thread 2)
+\begin{center}
+	\scalebox{0.85}{
+		\begin{tabular}{l||lcc}
+			&&$O_{min}$ & $O_{max}$ 
+			\\ 
+			\texttt{fetch ($\alpha_1$),} & & $\emptyset$ & $ \mathcal{A} \setminus \Set{\alpha_1}$ \\ 
+			\texttt{t1 = \{i\},} & & $\emptyset$ & $ \mathcal{A} \setminus \Set{\alpha_1, \texttt{i}}$  \\ 
+			\texttt{fetch  ($\alpha_2$),} & & $\emptyset$ & $ \mathcal{A} \setminus \Set{\alpha_1, \alpha_2, \texttt{i}}$\\ 
+			\texttt{t1 = t1 + 1;} & & $\emptyset$ & $ \mathcal{A} \setminus \Set{\alpha_1, \alpha_2, \texttt{i}}$ 
+			\\[4pt]
+			& \texttt{fetch ($\beta_1$),} & $\emptyset$ & $ \mathcal{A} \setminus \Set{\alpha_1, \alpha_2, \texttt{i}}$  \\
+			& \texttt{t2 = \{i\};} & $\emptyset$ & $ \mathcal{A}$
+			\\[4pt] 
+			& \texttt{fetch ($\beta_2$),} & $\emptyset$ & $ \mathcal{A}$ \\ 
+			& \texttt{t2 = t2 + 1,} & $\emptyset$ & $ \mathcal{A}$ \\
+			& \texttt{fetch ($\beta_3$),} & $\emptyset$ & $ \mathcal{A}$ \\
+			& \texttt{\{i\} = t2;}  & $\emptyset$ & $ \mathcal{A}$
+			\\[4pt] 
+			\texttt{fetch ($\alpha_3$),} & & $\emptyset$ & $ \mathcal{A} \setminus \Set{\alpha_3}$\\ 
+			\texttt{\{i\} = t1;} & & $\emptyset$ & $ \mathcal{A} \setminus \Set{\alpha_3, \texttt{i}}$
+	\end{tabular}}
+\end{center}
+\end{frame}
+
+\begin{frame} 
+\begin{itemize} 
+	\item Do this for O,P for each thread in all cooperative schedules
+	\item Theorem: iff for all threads $X$ before each LP and at end of schedule we have 
+	\begin{align*}
+	O_\mathit{min}(X)\  & \subseteq \ O_\mathit{max}(X) 
+	\\
+	P_\mathit{min}(X) \ & \subseteq \ P_\mathit{max}(X)
+	\end{align*}
+	then the program satisfies ownership conditions
+	\item No need for ownership annotation if we look at interleavings
+\end{itemize}
+\end{frame} 
+
+\begin{frame}
+Step 3 to a better life: \textbf{order reduction+\onslide<2->{invariants}}
+
+\onslide<3->
+\begin{itemize}
+	\item Purely sequential reasoning with invariants
+	\item Global invariant $I_{Sh}$, argues about
+	\begin{itemize} 
+		\item ownership
+		\item state of unowned addresses
+		\item state of partially owned (but not fully owned) addresses
+	\end{itemize}
+	\item Local invariants $I_{L,X}$ for each thread $X$
+	\begin{itemize} 
+		\item ownership of thread $X$
+		\item state of partially/fully owned addresses of thread $X$
+		\item state of processor registers of thread $X$ (including \texttt{pc})
+	\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+Show that this program increments at least once
 \begin{center}
 	\texttt{
 		\begin{tabular}{l||l}
-			fetch, & fetch,
-			\\ t1 = \{i\}; & t2 = \{i\};
-			\\ fetch, & fetch,	
-			\\ t1 = t1 +1, & t2 = t2 + 1,
-			\\ fetch, & fetch,
-			\\	\{i\} = t1; & \{i\} = t2;
+			t1 = \{i\}; & t2 = \{i\};
+			\\	\{i\} = t1+1; & \{i\} = t2+1;
 		\end{tabular}
 	}
 \end{center}
 \end{frame}
 
+\begin{frame}
+Add ghost variables to communicate ``increment has been executed''
+\begin{center}
+	\texttt{
+		\begin{tabular}{l||l}
+			t1 = \{i\}; & t2 = \{i\};
+			\\	\{i = t1+1\}; & \{i\} = t2+1;
+		\end{tabular}
+	}
+\end{center}
+\end{frame}
 
 \bibliography{bibliography}
 
