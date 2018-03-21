@@ -629,43 +629,50 @@ Step 3 to a better life: \textbf{order reduction+\onslide<2->{invariants}}
 \onslide<3->
 \begin{itemize}
 	\item Purely sequential reasoning with invariants
-	\item Global invariant $I_{Sh}$, argues about
-	\begin{itemize} 
-		\item ownership
-		\item state of unowned addresses
-		\item state of partially owned (but not fully owned) addresses
-	\end{itemize}
-	\item Local invariants $I_{L,X}$ for each thread $X$
-	\begin{itemize} 
-		\item ownership of thread $X$
-		\item state of partially/fully owned addresses of thread $X$
-		\item state of processor registers of thread $X$ (including \texttt{pc})
-	\end{itemize}
+	\item Global invariant $I_{Sh}$, argues about everything that can only be changed by LP
+	\item Local invariants $I_{L,X}$ for each thread $X$, argues about everything that can only be changed by thread $X$
 \end{itemize}
-\end{frame}
 
-\begin{frame}
-Show that this program increments at least once
 \begin{center}
-	\texttt{
-		\begin{tabular}{l||l}
-			t1 = \{i\}; & t2 = \{i\};
-			\\	\{i\} = t1+1; & \{i\} = t2+1;
-		\end{tabular}
-	}
+	\includefig{MLayoutInvariants}
 \end{center}
 \end{frame}
 
+
 \begin{frame}
-Add ghost variables to communicate ``increment has been executed''
+Prove that this program increments at most once
+
+\onslide<2->{Ownership: $\texttt{x} \in P(1), \quad \texttt{y} \in P(2)$}
 \begin{center}
 	\texttt{
-		\begin{tabular}{l||l}
-			t1 = \{i\}; & t2 = \{i\};
-			\\	\{i = t1+1\}; & \{i\} = t2+1;
-		\end{tabular}
-	}
+	\begin{tabular}{ll||l}
+	\color{gray} 1&\{x\} = 1; & \{y\} = 1; \\
+	\color{gray} 2& t1 = \{y\}, \onslide<2->{acq z if !y} & t2 = \{x\}, \onslide<2->{acq z if !x} \\
+	\color{gray} 3&if (! t1) & if (! t2) \\
+	\color{gray} 4&\quad t1 = z, & \quad t2 = z, \\
+	\color{gray} 5&\quad z = t1+1; & \quad z = t2+1;
+	\end{tabular}}
 \end{center}
+\onslide<3-> Invariants
+\begin{align*}
+	\texttt{z} \not\in O(1) \ \land \ \texttt{z} \not\in O(2) \quad &\to \quad \texttt{z} = 0 & \onslide<4->{\text{(Sh)}}
+	\\
+	\texttt{z} \in O(1) \quad &\to\quad \texttt{x} = 1 & \onslide<4->{\text{(Sh)}}
+	\\
+	\texttt{z} \in O(2) \quad &\to\quad \texttt{y} = 1 & \onslide<4->{\text{(Sh)}}
+	\\
+	\texttt{pc1} = 2 \quad &\to\quad \texttt{x} = 1 & \onslide<4->{\text{(L,1)}}
+	\\
+	\texttt{pc2} = 2 \quad &\to\quad \texttt{y} = 1 & \onslide<4->{\text{(L,2)}}
+	\\
+	\texttt{z} \in O(1) \quad &\to\quad \texttt{z} \le 1 & \onslide<4->{\text{(L,1)}}
+	\\
+	\texttt{z} \in O(2) \quad &\to\quad \texttt{z} \le 1 & \onslide<4->{\text{(L,2)}}
+\end{align*}
+\end{frame}
+
+\begin{frame}
+
 \end{frame}
 
 \bibliography{bibliography}
