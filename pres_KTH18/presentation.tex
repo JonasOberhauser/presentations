@@ -628,7 +628,7 @@ Step 3 to a better life: \textbf{order reduction+\onslide<2->{invariants}}
 
 \onslide<3->
 \begin{itemize}
-	\item Purely sequential reasoning with invariants
+	\item Purely sequential reasoning with invariants from IP to IP
 	\item Global invariant $I_{Sh}$, argues about everything that can only be changed by LP
 	\item Local invariants $I_{L,X}$ for each thread $X$, argues about everything that can only be changed by thread $X$
 \end{itemize}
@@ -657,24 +657,301 @@ Prove that this program increments at most once
 \begin{align*}
 	\texttt{z} \not\in O(1) \ \land \ \texttt{z} \not\in O(2) \quad &\to \quad \texttt{z} = 0 & \onslide<4->{\text{(Sh)}}
 	\\
-	\texttt{z} \in O(1) \quad &\to\quad \texttt{x} = 1 & \onslide<4->{\text{(Sh)}}
+	\texttt{x} = 0 \quad &\to\quad \texttt{z} \not\in O(1) & \onslide<5->{\text{(Sh)}}
 	\\
-	\texttt{z} \in O(2) \quad &\to\quad \texttt{y} = 1 & \onslide<4->{\text{(Sh)}}
+	\texttt{y} = 0 \quad &\to\quad \texttt{z} \not\in O(2) & \onslide<5->{\text{(Sh)}}
 	\\
-	\texttt{pc1} = 2 \quad &\to\quad \texttt{x} = 1 & \onslide<4->{\text{(L,1)}}
+	\texttt{pc1} = 2 \quad &\to\quad \texttt{x} = 1 \land \texttt{z} \not\in O(1) & \onslide<6->{\text{(L,1)}}
 	\\
-	\texttt{pc2} = 2 \quad &\to\quad \texttt{y} = 1 & \onslide<4->{\text{(L,2)}}
+	\texttt{pc2} = 2 \quad &\to\quad \texttt{y} = 1 \land \texttt{z} \not\in O(2) & \onslide<6->{\text{(L,2)}}
 	\\
-	\texttt{z} \in O(1) \quad &\to\quad \texttt{z} \le 1 & \onslide<4->{\text{(L,1)}}
+	\texttt{z} \in O(1) \quad &\to\quad \texttt{z} \le 1 & \onslide<7->{\text{(L,1)}}
 	\\
-	\texttt{z} \in O(2) \quad &\to\quad \texttt{z} \le 1 & \onslide<4->{\text{(L,2)}}
+	\texttt{z} \in O(2) \quad &\to\quad \texttt{z} \le 1 & \onslide<7->{\text{(L,2)}}
 \end{align*}
 \end{frame}
 
 \begin{frame}
+\begin{center}
+	\texttt{
+		\begin{tabular}{ll}
+			\color{gray} 1&\{x\} = 1; \\
+		\end{tabular}}
+\end{center}
+
+\begin{align*}
+\texttt{z} \not\in O(1) \ \land \ \texttt{z} \not\in O(2) \quad &\to \quad \texttt{z} = 0
+\\
+\texttt{x} = 0 \quad &\to\quad \texttt{z} \not\in O(1)
+\\
+\texttt{y} = 0 \quad &\to\quad \texttt{z} \not\in O(2)
+\\
+\texttt{pc1} = 2 \quad &\to\quad \texttt{x} = 1 \land \texttt{z} \not\in O(1) 
+\\
+\texttt{z} \in O(1) \quad &\to\quad \texttt{z} \le 1
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\begin{center}
+	\texttt{
+	\begin{tabular}{ll}
+		\color{gray} 2& t1 = \{y\}, acq z if !y  \\
+		\color{gray} 3&if (! t1)  \\
+		\color{gray} 4&\quad t1 = z,   \\
+		\color{gray} 5&\quad z = t1+1; 
+	\end{tabular}}
+\end{center}
+\scalebox{0.5}{.}
+\begin{align*}
+\texttt{z} \not\in O(1) \ \land \ \texttt{z} \not\in O(2) \quad &\to \quad \texttt{z} = 0  & \onslide<4>{*}
+\\
+\texttt{x} = 0 \quad &\to\quad \texttt{z} \not\in O(1)
+\\
+\texttt{y} = 0 \quad &\to\quad \texttt{z} \not\in O(2) & \onslide<3>{*}
+\\
+\texttt{pc1} = 2 \quad &\to\quad \texttt{x} = 1 \land \texttt{z} \not\in O(1)   & \onslide<2>{*}
+\\
+\texttt{z} \in O(1) \quad &\to\quad \texttt{z} \le 1
+\end{align*}
+\begin{description} 
+	\item[Case 1:] $\texttt{y}$ \\
+		Nothing changes
+	\item[Case 2:] $\texttt{!y}$
+\[ \onslide<2->{\texttt{z} \not \in O(1)}\onslide<3->{,\ \texttt{z} \not\in O(2)}\onslide<4->{,\ \texttt{z} = 0} \]
+\end{description}
+\end{frame}
+
+\begin{frame}
+\textbf{Summary}
+
+Two ways of reasoning: 
+\begin{description} 
+	\item[Cooperative scheduler]:
+	
+	\begin{itemize}
+		\item ownership automatically deduced
+		\item very low number of interleavings, probably still too many for big programs
+	\end{itemize} 
+	\item<2->[Sequential modular reasoning]:
+	
+	\begin{itemize} 
+		\item Local+Shared Invariants
+		\item ownership manual
+		\item no interleavings, instead 
+		
+			\begin{itemize} 
+				\item shared invariants that other threads obey
+				\item information about shared state is lost at each IP
+			\end{itemize}
+	\end{itemize}
+\end{description}
+\end{frame}
+
+\begin{frame}
+\textbf{But what about HW interrupts?}
+
+\begin{itemize}
+	\item In cooperative scheduler, interrupts only occur at IP
+	\begin{center} 
+	\includefig{BlockSuspensionComplete}	
+\end{center} 
+	\item<2-> In preemptive scheduler, interrupts occur at any point
+	\begin{center} 
+		\includefig{BlockSuspension}	
+	\end{center} 
+\end{itemize}
 
 \end{frame}
 
+
+\begin{frame} 
+Things evil IH can do: \textbf{mess up thread}
+
+\begin{center}\texttt{
+		\begin{tabular}{l||l}
+			T & IH \\
+			t1 = \{x\}, & t1 = 1, \\
+			if (t1) & \{eret\}; \\
+			\qquad t1 = 2; 
+		\end{tabular}
+}\end{center}
+
+In cooperative scheduler:
+\begin{center}\texttt{
+		\begin{tabular}{ccc}
+			\begin{tabular}{l||l}
+				t1 = \{x\}, 	
+				\\ 
+				if (t1) 	
+				\\
+				// nope \\
+				& t1 = 1, \\
+				& \{eret\};
+			\end{tabular}
+			& \hspace{2em}
+			&
+			\begin{tabular}{l||l}
+				& t1 = 1, \\
+				& \{eret\}; \\
+				t1 = \{x\}, \\
+				if (t1) 	
+				\\
+				// nope
+			\end{tabular}
+		\end{tabular}
+	}
+\end{center}
+	\[ \texttt{t1} \in \Set{ 0, 1 } \]
+\end{frame}
+ 
+\begin{frame}
+In preemptive scheduler: 
+\begin{center}\texttt{
+	\begin{tabular}{l||l}
+		t1 = \{x\}, 	
+		\\ 
+		& t1 = 1, \\
+		& \{eret\}; \\
+		if (t1) \\
+		\qquad t1 = 2; 
+	\end{tabular}
+	}
+\end{center}
+\end{frame} 
+
+\begin{frame} 
+Things evil IH can do: \textbf{read out state}
+
+\begin{center}\texttt{
+		\begin{tabular}{l||l}
+			T & IH \\
+			t1 = 1, 	& if (t1) \\
+			t2 = \{x\}; 	& \qquad x=1, \\
+						& \{eret\};
+		\end{tabular}
+}\end{center}
+
+In cooperative scheduler:
+\begin{center}\texttt{
+\begin{tabular}{ccc}
+	\begin{tabular}{l||l}
+			t1 = 1, 	
+			\\ 
+			t2 = \{x\}; 	
+			\\
+			& if (t1) \\
+			& \qquad x=1, \\
+			& \{eret\};
+	\end{tabular}
+& \hspace{2em}
+&
+	\begin{tabular}{l||l}
+	& if (t1) \\
+	& // nope \\
+	& \{eret\}; \\
+	t1 = 1, \\ 
+	t2 = \{x\};
+\end{tabular}
+\end{tabular}
+}
+\end{center}
+\[ \texttt{t2} = 0 \]
+\end{frame} 
+\begin{frame}
+In preemptive scheduler:
+\begin{center}
+	\texttt{
+		\begin{tabular}{l||l}
+		t1 = 1, \\ 
+		& if (t1) \\
+		& \qquad x = 1, \\
+		& \{eret\}; \\
+		t2 = \{x\};
+	\end{tabular}
+}
+\end{center} 
+
+\end{frame} 
+
+\begin{frame} 
+Obvious conditions
+\begin{enumerate} 
+	\item don't depend on context
+	\item restore state after eret
+\end{enumerate} 
+\end{frame}
+
+\begin{frame}
+Typical interrupt service routine (ISR):
+\begin{center}\texttt{
+	\begin{tabular}{l}
+		// \{jisr\}, \\
+		store context; \\
+		\{enable interrupts\}; \\
+		... \\
+		\{disable interrupts\}; \\
+		restore context, \\
+		\{eret\};
+	\end{tabular}
+}\end{center}
+
+\begin{enumerate} 
+	\item obviously uses state (copies it to memory)
+	\item not so obvious: can't fully restore state
+\end{enumerate} 
+\end{frame}
+
+\begin{frame}
+Semantics of \texttt{eret}:
+\begin{align*}
+	pc' &= epc \\
+	mode' &= emode \\
+	mask' &= emask 
+\end{align*} 
+
+... and who restores $epc$, $emode$, $emask$?
+\end{frame} 
+
+\begin{frame}
+Partition into four classes of registers:
+
+\alt<2->
+{\alt<3->
+{\begin{center} 
+		\includefig{MLayoutPRNonPre}
+\end{center}}
+{\begin{center} 
+	\includefig{MLayoutPRPre}
+\end{center}}}
+{\begin{center} 
+	\includefig{MLayoutPR}
+\end{center}}
+\end{frame} 
+
+\begin{frame} 
+Keep track of context with ``dirtiness'' formalism:
+
+\[ d(a) = \begin{cases} \bot & \text{not dirty} \\
+	\square & \text{contains trash} \\
+	(r,X) & \text{contains value of register $r$ of thread $X$}
+ 	\end{cases} \]
+
+So to restore context of thread $X$:
+\[ eret \ \land \ d(epc) = (pc,X) \ \land \ d(emode) = (mode,X) \ldots \]
+\end{frame} 
+
+
+
+\begin{frame} 
+Summary of Dirtiness Conditions:
+\begin{enumerate} 
+	\item moving dirty data around is allowed, including into memory or other registers 
+	\item using dirty data for addresses (e.g., by writing it into PTE) and some other sensitive stuff is forbidden
+	\item on eret, restorable registers must be restored by having 
+	\[ d(epc) = (pc,X) \ \land \ \ldots \]
+\end{enumerate}
+\end{frame} 
 \bibliography{bibliography}
 
 
