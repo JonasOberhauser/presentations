@@ -699,7 +699,7 @@ Prove that this program increments at most once
 		\color{gray} 2& t1 = \{y\}, acq z if !y  \\
 		\color{gray} 3&if (! t1)  \\
 		\color{gray} 4&\quad t1 = z,   \\
-		\color{gray} 5&\quad z = t1+1; 
+		\color{gray} 5&\quad z = t1+1; \onslide<5>{//t1 = 0}
 	\end{tabular}}
 \end{center}
 \scalebox{0.5}{.}
@@ -715,9 +715,9 @@ Prove that this program increments at most once
 \texttt{z} \in O(1) \quad &\to\quad \texttt{z} \le 1
 \end{align*}
 \begin{description} 
-	\item[Case 1:] $\texttt{y}$ \\
+	\item[Case 1:] $\texttt{y} \not= 0$ \\
 		Nothing changes
-	\item[Case 2:] $\texttt{!y}$
+	\item[Case 2:] $\texttt{y} = 0$
 \[ \onslide<2->{\texttt{z} \not \in O(1)}\onslide<3->{,\ \texttt{z} \not\in O(2)}\onslide<4->{,\ \texttt{z} = 0} \]
 \end{description}
 \end{frame}
@@ -773,7 +773,7 @@ Things evil IH can do: \textbf{mess up thread}
 			T & IH \\
 			t1 = \{x\}, & t1 = 1, \\
 			if (t1) & \{eret\}; \\
-			\qquad t1 = 2; 
+			\qquad z++; 
 		\end{tabular}
 }\end{center}
 
@@ -802,7 +802,7 @@ In cooperative scheduler:
 		\end{tabular}
 	}
 \end{center}
-	\[ \texttt{t1} \in \Set{ 0, 1 } \]
+	\[ \texttt{z} = 0 \]
 \end{frame}
  
 \begin{frame}
@@ -814,7 +814,7 @@ In preemptive scheduler:
 		& t1 = 1, \\
 		& \{eret\}; \\
 		if (t1) \\
-		\qquad t1 = 2; 
+		\qquad z++; 
 	\end{tabular}
 	}
 \end{center}
@@ -938,20 +938,110 @@ Keep track of context with ``dirtiness'' formalism:
  	\end{cases} \]
 
 So to restore context of thread $X$:
-\[ eret \ \land \ d(epc) = (pc,X) \ \land \ d(emode) = (mode,X) \ldots \]
+\begin{align*}
+ eret \ &\land \ d(epc) = (pc,X) \ 
+ \\ &\land \ d(emode) = (mode,X) 
+ \\
+	&\land \ d(\texttt{t1}) = (\texttt{t1},X)
+ \\ &\land \ \ldots
+\end{align*}
 \end{frame} 
 
 
 
 \begin{frame} 
-Summary of Dirtiness Conditions:
-\begin{enumerate} 
-	\item moving dirty data around is allowed, including into memory or other registers 
-	\item using dirty data for addresses (e.g., by writing it into PTE) and some other sensitive stuff is forbidden
-	\item on eret, restorable registers must be restored by having 
-	\[ d(epc) = (pc,X) \ \land \ \ldots \]
-\end{enumerate}
+Dirtiness Condition 1: \textbf{don't compute with dirty data}
+
+Assume
+\[ d(\texttt{t1}) = (r,X) \]
+
+Allowed:
+\begin{center}\texttt{y = t1;}\end{center} 
+
+Forbidden:
+\begin{center}\texttt{y = t1+t2;}\end{center} 
+\end{frame}
+
+\begin{frame} 
+Dirtiness Condition 2: \textbf{don't use dirty data}
+
+Assume \[ d(\texttt{t1}) = (r,X) \ \lor \ d(\texttt{t1}) = \square \]
+
+Forbidden:
+\begin{center}\texttt{*(t1) = 1;}\end{center} 
+
+Forbidden:
+\begin{center}\texttt{if (t1) \ldots}\end{center} 
+
+Forbidden:
+\begin{center}\texttt{PTE = t1;}\end{center} 
+\end{frame}
+
+\begin{frame} 
+Dirtiness Condition 3: \textbf{don't rely on the value of dirty addresses}
+
+Assume 
+\begin{align*} d(\texttt{t1}) &= (pc,X) 
+\\
+	\texttt{t1} &= 3
+\end{align*}
+Allowed:
+\begin{center}\texttt{epc = t1, \{eret\};}\end{center} 
+
+Forbidden:
+\begin{center}\texttt{epc = 3, \{eret\};}\end{center} 
 \end{frame} 
+
+\begin{frame} 
+\begin{center}\texttt{
+		\begin{tabular}{ll||l}
+			& T & IH \\
+			\color{gray} 1 &
+			\{enable interrupts\},	& t1 = epc, \\
+			\color{gray} 2 &
+			t2 = t2+1; 	& epc = 3, \\
+			\color{gray} 3 &
+			\{disable interrupts\}; & \{eret\};
+		\end{tabular}
+}\end{center}
+
+Works in cooperative scheduler because 
+\[ \texttt{epc} = 3 \]
+on all interrupts, but in preemptive scheduler
+\[ \texttt{epc} = 2 \]
+\end{frame}
+
+\begin{frame} 
+\textbf{Dirtiness \& invariants}
+
+Don't rely on values of dirty addresses
+
+Allowed:
+\[ d(\texttt{t1}) = \bot  \  \land \ \texttt{t1} = 3  \]
+
+Forbidden:
+\[ d(\texttt{t1}) = \square \ \land \ \texttt{t1} = 3 \]
+\end{frame} 
+
+
+\begin{frame}
+\begin{center}\texttt{
+		\begin{tabular}{l}
+			// \{jisr\}, \\
+			\onslide<2->{\quad// gpr, epc, ... are now dirty} \\
+			store context; \\
+			\onslide<3->{\quad// PCB/interrupt stack dirty} \\
+			\{enable interrupts\}; \\
+			... \\
+			\{disable interrupts\}; \\
+			\onslide<4->{\quad// registers on interrupt stack are still dirty} \\
+			restore context, \\
+			\onslide<5->{\quad// dirty data now back in gpr, epc, ...} \\
+			\{eret\};
+		\end{tabular}
+}\end{center}
+\end{frame}
+
 \bibliography{bibliography}
 
 
