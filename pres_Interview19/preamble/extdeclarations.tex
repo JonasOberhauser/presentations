@@ -1,0 +1,121 @@
+% config of the tikz package
+\usetikzlibrary{automata,positioning}
+
+%new shorthands
+
+% Tombstone at end of proof (amsthm does this now)
+%\renewcommand\endproof{~\hfill\qed}
+
+% std mathcal font
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+
+% new utils
+\newcommand{\tikscale}{1.0}
+
+\newcommand{\tbl}[3]{%
+\caption{#3}%
+\label{tab:#2}%
+\centering%
+\input{tables/#1}%
+}
+
+\newcommand{\tpic}[3]{%
+\centering%
+\adjustbox{scale = \tikscale}{%
+\tikzpicture[%
+	>=stealth,%
+	shorten >=0.5pt,%
+	node distance=2.5cm,%
+	on grid,%
+	auto,%
+	every node/.append style={very thin},%
+	every path/.append style={very thin}%
+]%
+\input{drawings/#1}%
+\endtikzpicture}%
+\caption{#3}\label{fig:#2}%
+}
+
+\newcommand{\tfigscaled}[4]{%
+\centering%
+\adjustbox{scale = #4}{\input{figures/#1.pdf_t}}%
+\caption{#3}\label{fig:#2}%
+}
+
+%%% REDUCTION PROOFS
+%% units making steps
+\newcommand{\MMU}{\mathrm{MMU}}
+\newcommand{\SB}{\mathrm{SB}}
+\newcommand{\APIC}{\mathrm{APIC}}
+\newcommand{\IOAPIC}{\mathrm{IOAPIC}}
+\newcommand{\DEV}{\mathrm{DEV}}
+
+%% classes of schedules
+\newcommand{\LSBS}{\mathrm{LSBS}}
+\newcommand{\ABS}{\mathrm{ABS}}
+\newcommand{\REDUCIBLE}{\mathrm{RED}}
+\newcommand{\IND}{\mathrm{ORD}}
+
+\newcommand{\IBLOCK}{\mathrm{IBLOCK}}
+\newcommand{\CBLOCK}{\mathrm{CBLOCK}}
+\newcommand{\EIBLOCK}{\mathrm{EIBLOCK}}
+%% 
+\newcommand{\sbcomp}[1]{{\overline{#1}}}
+
+
+%% Makes it into a single word...
+\newcommand{\inputsafe}{in\hy safe}
+%% communication relations
+\DeclareMathOperator{\fwdsync}\vartriangleright
+\DeclareMathOperator{\rsync}{{\ooalign{$\vartriangleright$\cr\kern0.04em
+  $\ast$\cr}}}
+\DeclareMathOperator{\sync}{\blacktriangleright}
+\DeclareMathOperator{\talks}{\sync\!\!\!\!\!\fwdsync}
+\DeclareMathOperator{\rtalks}{\sync\!\!\!\!\!\rsync}
+\DeclareMathOperator{\backsync}{\vartriangleleft}
+\DeclareMathOperator{\leaksync}{\blacktriangleright_2}
+
+%% memory update 
+\DeclareMathOperator*{\updatedby}{\circledast}
+\DeclareMathOperator*{\uninfupdatedby}{\circledcirc}
+
+
+%% function restriction
+\newcommand\restr[2]{{% we make the whole thing an ordinary symbol
+  \left.\kern-\nulldelimiterspace % automatically resize the bar with \right
+  #1 % the function
+  \vphantom{\big|} % pretend it's a little taller at normal size
+  \right|_{#2} % this is the delimiter
+  }}
+%% intersects
+\DeclareMathOperator*{\intersects}{\dot\cap}
+%% List comprehension, taken from braket
+{\catcode`\|=\active
+  \xdef\List{\protect\expandafter\noexpand\csname List \endcsname}
+  \expandafter\gdef\csname List \endcsname#1{\left[%
+     \ifx\SavedDoubleVert\relax \let\SavedDoubleVert\|\fi
+     \:{\let\|\SetDoubleVert
+     \mathcode`\|32768\let|\SetVert
+     #1}\:\right]}
+}
+
+%% absolute/length
+\providecommand{\abs}[1]{\lvert#1\rvert}
+\providecommand{\len}[1]{\lvert#1\rvert}
+
+%% from
+\newcommand{\from}\leftarrow
+
+
+%% Aliases for readablity
+\newcommand{\Iota}I
+
+%% checkmark and x
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+
+%% When the machines agree
+\providecommand{\MI}{\ast}
+\providecommand{\M}[1]{\MI} %can be replaced by #1 in case we decide to distinguish the machine types after all
+
+

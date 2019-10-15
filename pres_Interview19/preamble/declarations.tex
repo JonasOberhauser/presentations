@@ -1,0 +1,137 @@
+%\theoremstyle{definition}
+%\newtheorem{definition}{Definition}
+%\newtheorem{lemma}{Lemma}
+%\newtheorem{theorem}{Theorem}
+
+% note: the next 2 environments are used only in sysbook; have to be adapted wrt to the style reference
+\newtheorem{invariant}{Invariant}
+\newtheorem{ccond}{Context Condition}
+
+% make float placement on top the default:
+\floatplacement{figure}{t}
+\floatplacement{table}{t}
+\renewcommand{\floatpagefraction}{0.8}
+
+% tikz
+\tikzset{timing/slope=0.1}
+\tikzset{timing/.style = {y=2.5ex, x = 4.0ex}}
+
+% other
+\graphicspath{{figures/}}
+\bibliographystyle{alpha}
+
+% remove later
+\newcommand{\typo}[1]{\textcolor{blue}{\textbf{#1}}}
+\newcommand{\bbox}[1]{\fcolorbox{blue}{white}{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define your desired shortcuts here:
+\mathchardef\hy="2D
+\newcommand{\cm}{\mbox{,}}
+\newcommand{\setB}{\mathbb{B}}
+\newcommand{\setN}{\mathbb{N}}
+\newcommand{\setZ}{\mathbb{Z}}
+\newcommand{\setR}{\mathbb{R}}
+\newcommand{\setS}{\mathbb{S}}
+\newcommand{\B}{\mathbb{B}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\nat}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\NOT}[1]{\overline{#1}}
+\newcommand{\AND}{\land}
+\newcommand{\OR}{\lor}
+\newcommand{\Sum}{\sum\limits}
+\newcommand{\tmod}{\mathrel{\mathrm{tmod}}}
+\newcommand{\pskip}{\smallskip\par\noindent}
+\newcommand{\ignore}[1]{\relax}
+\newcommand{\figscale}{0.834}
+%\renewcommand{\pskip}{\smallskip\bbox{\mbox{\quad}}\par\noindent}
+\newcommand{\smalltt}[1]{\text{\small\texttt{#1}}}
+\newcommand{\super}[1]{\textsuperscript{#1}}
+\newcommand{\sub}[1]{\textsubscript{#1}}
+\newcommand{\langlett}{{\fontfamily{cmbr}\selectfont\textlangle}}
+\newcommand{\ranglett}{{\fontfamily{cmbr}\selectfont\textrangle}}
+\renewcommand{\theFancyVerbLine}{\text{\small\arabic{FancyVerbLine}:}}
+\renewenvironment{verbatim}[0]{\Verbatim}{\endVerbatim}
+
+% figures
+\newcommand{\tfig}[3]{%
+\centering%
+\adjustbox{scale = \figscale}{\input{figures/#1.pdf_t}}%
+\caption{#3}\label{fig:#2}%
+}
+
+\newcommand{\tsubfigV}[3]{%
+\subcaptionbox{\label{#2} #3}{\import{figures/}{#1.pdf_tex}}%
+}
+
+\newcommand{\includefig}[1]{\import{figures/}{#1.pdf_tex}}
+
+
+\newcommand{\tschemfig}[4]{%
+\figure[tp]%
+\addtolength{\subfigcapskip}{0.1in}%
+\centering%
+\subfigure[\label{fig:#1} symbol]{\trimbox{-0.5\textwidth+0.5\width 0pt 0pt}{\raisebox{#3mm}{\adjustbox{scale = \figscale}{\input{figures/#1.pdf_t}}}}}\\%
+\subfigure[\label{fig:#1impl} implementation]{\trimbox{-0.5\textwidth+0.5\width 0pt 0pt}{\raisebox{#4mm}{\adjustbox{scale = \figscale}{\input{figures/#1impl.pdf_t}}}}}%
+\caption{#2}\label{fig:#1-all}%
+\endfigure%
+}
+
+%note: command "remark" is already defined in the style file
+%\newcommand{\remark}[1]{\marginpar{\framebox{\parbox[t]{16mm}{
+  %\tiny\raggedright #1}}}}
+%\newcommand{\oldremark}[1]{\relax}
+
+% code
+\fvset{
+	frame=lines,
+	framerule=0.2pt,
+	framesep=4pt,
+	resetmargins=true,
+	xleftmargin=16pt,
+	xrightmargin=16pt,
+%	numbers=left,
+%	numberblanklines=false,
+%	numbersep=-16pt,
+	tabsize=0,
+	fontfamily=courier,
+	fontsize=\small,
+	commandchars=\\\@\#
+}
+
+\lstnewenvironment{code}
+    {\lstset{}%
+      \csname lst@SetFirstLabel\endcsname}
+    {\csname lst@SaveFirstLabel\endcsname}
+    \lstset{
+      language=Haskell,
+      mathescape = true,
+      commentstyle= \sffamily\itshape,
+      basicstyle=\small\ttfamily,
+      keywordstyle=\color{DarkBlue}\bfseries,
+      flexiblecolumns=false,
+      basewidth={0.5em,0.45em},
+      morecomment=[l]{//},
+      numbers = left,
+      numberstyle = \color{Gray}\tiny\ttfamily,
+      breaklines = true,
+      literate={+}{{$+$}}1 {*}{{$*$}}1 {=}{{$=$}}1 {!=}{{$\neq$}}2
+               {>}{{$>$}}1 {<}{{$<$}}1 {\\}{{$\lambda$}}1
+               {->}{{$\rightarrow$}}2 {>=}{{$\geq$}}2 {<-}{{$\leftarrow$}}2
+               {<=}{{$\leq$}}2 {=>}{{$\Rightarrow$}}2
+               {>>}{{$\gg$}}1
+               {<<}{{$\ll$}}1
+               {|}{{$\mid$}}1
+               {||}{{$\vee$}}2 {&&}{{$\wedge$}}2
+               {@}{{$\circ$}}1
+               {?}{{{\color{DarkBlue}{?}}}}1
+               {...}{{$\ldots$}}3
+    }
+
+% forbids footnotes to travel
+%\interfootnotelinepenalty=1000000000
+\interfootnotelinepenalty=10000
+
+% theorems of amsthm

@@ -1,0 +1,40 @@
+\usepackage{tikz}
+\usepackage{import}
+
+
+% inference rules
+\usepackage{mathpartir}
+
+\let\proof\relax
+\let\endproof\relax
+\usepackage{amsthm}
+
+% set literals, \Set{ ... | ... }, \Set{ ..., ..., ..., ... }
+\usepackage{braket}
+
+% interval literals, \interval{...}{...}, \interval[open left]{...}{...} etc
+\usepackage{interval}
+\intervalconfig{
+	soft  open  fences,
+	separator symbol=:,
+}
+
+\usepackage{import}
+\usepackage{bm}
+
+% \centernot : like \not, but better alignment
+\usepackage{centernot}
+
+% has nice things like \cmark and \xmark
+\usepackage{pifont}
+\usepackage{wasysym}
+
+
+\usepackage{multirow}
+\usepackage{nameref}
+
+% has multiple references grouped together in clever ways; \cref
+\usepackage[capitalise]{cleveref}
+
+% manipulates strings
+\usepackage{xstring}
